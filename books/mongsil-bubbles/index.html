@@ -1,0 +1,466 @@
+<title>몽실몽실 비눗방울</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap">
+<style>
+/* layout: a dummy-book viewer — every row is one opened spread (left page | right page), so rows always line up */
+:root{
+  --bg:#edf3f8; --surface:#ffffff; --fg:#22303b; --muted:#5a6976; --line:#d2dde7;
+  --accent:#2f78c9; --on-accent:#ffffff; --chip:#e1ebf5;
+  --art-ink:#3b302b; --art-light:#ffffff; --blank:#efe8da; --blank-ink:#8f846f;
+  --font-book:'Gaegu','Gowun Dodum',system-ui,sans-serif;
+  --font-ui:'Gowun Dodum',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121920; --surface:#1b242d; --fg:#e4ecf3; --muted:#9aa9b6; --line:#2b3844;
+    --accent:#7db6ee; --on-accent:#0f1b26; --chip:#22303c; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121920; --surface:#1b242d; --fg:#e4ecf3; --muted:#9aa9b6; --line:#2b3844;
+  --accent:#7db6ee; --on-accent:#0f1b26; --chip:#22303c; color-scheme:dark;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:16px;line-height:1.6}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:22px 56px}
+header h1{font-family:var(--font-book);font-weight:700;font-size:clamp(32px,6vw,48px);line-height:1.1;margin:0;text-wrap:balance}
+header p{margin:6px 0 0;color:var(--muted)}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 22px}
+.tabs button{font:inherit;padding:7px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* one opened spread */
+.row{container:row / inline-size;min-width:0}
+.row .lab{font-size:14px;color:var(--muted);margin-bottom:6px}
+.row .lab b{color:var(--fg);font-weight:700}
+.spreadbox{position:relative;display:grid;grid-template-columns:1fr 1fr;border-radius:4px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(20,40,60,.10),0 10px 28px rgba(20,50,80,.14)}
+.spreadbox.full{grid-template-columns:1fr}
+.spreadbox::after{content:"";position:absolute;top:0;bottom:0;left:calc(50% - 7px);width:14px;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,0,0,.15) 50%,rgba(0,0,0,0))}
+.sheet{position:relative;container-type:inline-size;min-width:0;background:var(--art-light)}
+.sheet svg{display:block;width:100%;height:auto}
+.sheet.blank{aspect-ratio:800/560;background:var(--blank);display:flex;align-items:center;justify-content:center;
+  color:var(--blank-ink);font-family:var(--font-book);font-size:clamp(14px,4cqw,26px)}
+.txt{--u:1cqw;position:absolute;font-family:var(--font-book);font-weight:700;color:var(--art-ink);
+  font-size:calc(var(--u) * 3.6);line-height:1.38;text-wrap:pretty}
+.sheet.full .txt{--u:.5cqw}
+.txt.light{color:var(--art-light);text-shadow:0 1px 3px rgba(20,60,110,.55)}
+.txt.title{font-size:calc(var(--u) * 8.6);line-height:1.1;text-align:center}
+.txt.title small{display:block;font-size:.34em;font-weight:400;margin-top:.5em}
+.txt.big{font-size:calc(var(--u) * 6.4)}
+.txt p{margin:0 0 .35em}
+.recipe .rt{font-size:1.4em;margin-bottom:.3em}
+.recipe .rs{font-weight:400;margin-bottom:.5em}
+.recipe ol{list-style:none;margin:0;padding:0;display:grid;gap:.12em}
+/* the story text under the picture, used whenever the picture is too small to read text on it */
+.cap{display:none;margin-top:10px;font-family:var(--font-book);font-size:20px;line-height:1.45}
+.cap p{margin:0 0 6px}
+.cap b{font-family:var(--font-ui);font-weight:400;font-size:13px;color:var(--muted);margin-right:6px;
+  display:inline-block;padding:0 7px;border-radius:999px;background:var(--chip);vertical-align:2px}
+.rmemo{display:none}
+@container row (max-width: 880px){ .txt{display:none} .cap{display:block} }
+
+.stage{max-width:1000px;margin:0 auto}
+.controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px auto 0;max-width:1000px}
+.controls button{font:inherit;padding:9px 18px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;min-width:96px}
+.controls button:disabled{opacity:.4;cursor:default}
+.pos{font-variant-numeric:tabular-nums;color:var(--muted);text-align:center}
+.pos b{color:var(--fg);font-weight:400}
+.memo{max-width:1000px;margin:18px auto 0;padding:14px 18px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.memo h3{margin:0 0 4px;font-size:13px;letter-spacing:.06em;color:var(--muted);font-weight:400}
+.memo p{margin:0}
+.dots{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px}
+.dots button{width:11px;height:11px;padding:0;border-radius:50%;border:0;background:var(--line);cursor:pointer}
+.dots button[aria-current="true"]{background:var(--accent)}
+
+.tip{margin:0 0 20px;padding:12px 16px;border-radius:12px;background:var(--chip);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:28px 22px}
+.cell{display:block;align-self:start;min-width:0;background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
+
+.cast h2{font-family:var(--font-book);font-size:28px;margin:4px 0 12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.card .por{background:#dff0fc;border-radius:10px;display:flex;justify-content:center}
+.card .por svg{width:62%;height:auto;display:block}
+.card h3{font-family:var(--font-book);font-size:26px;margin:10px 0 0}
+.card .why{color:var(--muted);margin:2px 0 8px}
+.card ul{margin:0;padding:0;list-style:none;display:grid;gap:4px}
+.card li{display:flex;gap:8px;align-items:center}
+.sw{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.25);flex:none}
+.chg{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;background:var(--chip);color:var(--fg);margin-left:4px}
+.adults{margin-top:26px}
+.adults .card .por svg{width:44%}
+.note{margin-top:22px;color:var(--muted);font-size:14px}
+@media (prefers-reduced-motion:no-preference){.stage .spreadbox{animation:fade .25s ease}}
+@keyframes fade{from{opacity:.4}to{opacity:1}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>몽실몽실 비눗방울</h1>
+    <p>그림책 더미(시안) · 표지와 15쪽 · 펼친 두 쪽씩 보기</p>
+  </header>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="t-flip" aria-selected="true">넘겨 보기</button>
+    <button role="tab" id="t-grid" aria-selected="false">한눈에 보기</button>
+    <button role="tab" id="t-cast" aria-selected="false">등장인물</button>
+  </div>
+
+  <section id="v-flip">
+    <div class="stage" id="stage"></div>
+    <div class="controls">
+      <button id="prev">← 이전</button>
+      <div class="pos" id="pos"></div>
+      <button id="next">다음 →</button>
+    </div>
+    <div class="dots" id="dots"></div>
+    <div class="memo"><h3>구성 메모</h3><p id="memo"></p></div>
+  </section>
+
+  <section id="v-grid" hidden>
+    <p class="tip">책을 펼치면 왼쪽은 짝수 쪽, 오른쪽은 홀수 쪽이에요. 그래서 두 쪽을 한 그림으로 쓰는 펼침면은 늘 6–7쪽, 12–13쪽처럼 짝수–홀수 자리에 와요. 한 줄이 펼친 책 한 번이에요.</p>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="v-cast" class="cast" hidden>
+    <h2>세 친구</h2>
+    <div class="cards" id="kids"></div>
+    <div class="adults">
+      <h2>어른들</h2>
+      <div class="cards" id="grown"></div>
+    </div>
+    <p class="note">옷 색은 세 아이가 그림에서 한눈에 구별되도록 조금 바꿨어요. 바뀐 곳에는 ‘변경’ 표시가 있어요.</p>
+  </section>
+</div>
+
+<script>
+
+const INK='#3b302b';
+let P='';
+const R=n=>Math.round(n*10)/10;
+const D=Math.PI/180;
+function rng(seed){let s=seed>>>0||1;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+const ST=`stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"`;
+
+const K={
+  nari:{name:'나리',top:'#8a5cc4',pants:'#8a5cc4',hair:'#3b2a20',style:'bob',pin:'#f5c518',skin:'#f7d9c0',stripe:true,wand:'#f5c518'},
+  sol:{name:'솔이',top:'#f39ab8',pants:'#7fa7d6',hair:'#2a1d16',style:'pony',streak:'#4fcfae',tie:'#f06d9b',skin:'#f5d3b8',wand:'#f06d9b'},
+  dahong:{name:'다홍',top:'#a9abb0',pants:'check',hair:'#4a3020',style:'long',pin:'#e23b3b',skin:'#f8dcc6',wand:'#e23b3b'}
+};
+const A={
+  dad:{coat:'#4f7a5a',pants:'#3d4250',hair:'#2b211c',style:'short',glasses:true,skin:'#f1cfb2'},
+  narimom:{coat:'#d6bc94',pants:'#5b4f6b',hair:'#3a2a22',style:'bob',skin:'#f6d6bd'},
+  solmom:{coat:'#e0a53a',pants:'#47566e',hair:'#2a1e18',style:'long',skin:'#f3d0b4',bag:'#4f9e8a'},
+  hongmom:{coat:'#34507a',pants:'#7a6a5a',hair:'#4a3020',style:'bun',skin:'#f7d9c3'}
+};
+const AUT={o:['#e9894a','#f2b545','#d9603b'],y:['#f2c14e','#e9a93a','#f5d76e'],r:['#d9533b','#e9894a','#c8413f'],d:['#b8643a','#c98a3a','#a24a30']};
+
+function defs(){return `<defs>
+<radialGradient id="${P}bub" cx="35%" cy="30%" r="72%">
+ <stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".22" stop-color="#fff" stop-opacity=".3"/>
+ <stop offset=".7" stop-color="#d6ecff" stop-opacity=".22"/><stop offset=".88" stop-color="#f2c4ff" stop-opacity=".55"/>
+ <stop offset="1" stop-color="#aef0dc" stop-opacity=".85"/></radialGradient>
+<pattern id="${P}check" width="12" height="12" patternUnits="userSpaceOnUse">
+ <rect width="12" height="12" fill="#cc4a46"/><rect width="6" height="12" fill="#2f3f66" opacity=".5"/><rect width="12" height="6" fill="#2f3f66" opacity=".5"/></pattern>
+<linearGradient id="${P}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7ab8ee"/><stop offset="1" stop-color="#cde9fc"/></linearGradient>
+<linearGradient id="${P}deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a86d8"/><stop offset="1" stop-color="#a9d7f8"/></linearGradient>
+<linearGradient id="${P}eve" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3a27a"/><stop offset=".7" stop-color="#fbd6a6"/><stop offset="1" stop-color="#fde8c4"/></linearGradient>
+</defs>`}
+
+/* ---------- small parts ---------- */
+const limb=(x1,y1,x2,y2,c,w)=>`<line x1="${R(x1)}" y1="${R(y1)}" x2="${R(x2)}" y2="${R(y2)}" stroke="${INK}" stroke-width="${w+4.5}" stroke-linecap="round"/><line x1="${R(x1)}" y1="${R(y1)}" x2="${R(x2)}" y2="${R(y2)}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+const sky=(w,h,id='sky')=>`<rect width="${w}" height="${h}" fill="url(#${P}${id})"/>`;
+const ground=(w,h,y,c='#cbd88a')=>`<path d="M0,${y} Q${w*.25},${y-22} ${w*.5},${y} T${w},${y-6} V${h} H0Z" fill="${c}" ${ST}/>`;
+const tree=(x,y,s,c=AUT.o)=>`<g transform="translate(${x},${y}) scale(${s})"><path d="M-9,0 L-6,-95 H6 L9,0Z" fill="#8a5a3c" ${ST}/><circle cx="-38" cy="-100" r="40" fill="${c[1]}" ${ST}/><circle cx="38" cy="-104" r="42" fill="${c[2]}" ${ST}/><circle cx="0" cy="-140" r="50" fill="${c[0]}" ${ST}/></g>`;
+const cloud=(x,y,s)=>`<path transform="translate(${x},${y}) scale(${s})" d="M-62,0 Q-64,-28 -34,-28 Q-26,-52 4,-46 Q26,-62 46,-38 Q74,-36 66,0Z" fill="#fff" opacity=".9"/>`;
+const bubble=(x,y,r)=>`<circle cx="${R(x)}" cy="${R(y)}" r="${R(r)}" fill="url(#${P}bub)" stroke="#86bde9" stroke-width="1.6"/><path d="M${R(x-r*.55)},${R(y-r*.1)} A${R(r*.6)},${R(r*.6)} 0 0 1 ${R(x-r*.1)},${R(y-r*.58)}" stroke="#fff" stroke-width="${R(Math.max(1.4,r*.12))}" fill="none" stroke-linecap="round"/>`;
+function bubbles(n,x0,y0,x1,y1,r0,r1,seed,avoid){const r=rng(seed);let s='';let k=0,t=0;while(k<n&&t<n*20){t++;const x=x0+r()*(x1-x0),y=y0+r()*(y1-y0),rr=r0+Math.pow(r(),1.6)*(r1-r0);if(avoid&&avoid(x,y,rr))continue;s+=bubble(x,y,rr);k++}return s}
+const leafShape=(x,y,rot,c,sz=1)=>`<path transform="translate(${R(x)},${R(y)}) rotate(${R(rot)}) scale(${sz})" d="M0,-9 Q8,0 0,9 Q-8,0 0,-9Z" fill="${c}" stroke="${INK}" stroke-width="1.4"/>`;
+function leaves(n,x0,y0,x1,y1,seed){const r=rng(seed),cs=[...AUT.o,...AUT.y,...AUT.r];let s='';for(let i=0;i<n;i++)s+=leafShape(x0+r()*(x1-x0),y0+r()*(y1-y0),r()*360,cs[Math.floor(r()*cs.length)],.8+r()*.5);return s}
+const acorn=(x,y,s=1)=>`<g transform="translate(${R(x)},${R(y)}) scale(${s})"><ellipse cx="0" cy="3" rx="6" ry="7.5" fill="#b07a45" ${ST}/><path d="M-7.5,0 Q0,-9 7.5,0Z" fill="#6e4a2a" ${ST}/></g>`;
+const pinecone=(x,y,s=1)=>`<g transform="translate(${x},${y}) scale(${s})"><ellipse rx="8" ry="11" fill="#8a5a3c" ${ST}/><path d="M-6,-4 Q0,0 6,-4 M-7,2 Q0,6 7,2 M-5,7 Q0,10 5,7" stroke="${INK}" stroke-width="1.3" fill="none"/></g>`;
+const bang=(x,y,size=44,c='#e4572e')=>`<text x="${x}" y="${y}" font-family="Gaegu, sans-serif" font-weight="700" font-size="${size}" fill="${c}" text-anchor="middle">!</text>`;
+const sun=(x,y,r,c='#ffd36e')=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/>`;
+
+/* items held in hands (local coords of the figure) */
+const wand=c=>(hx,hy)=>`<line x1="${R(hx)}" y1="${R(hy)}" x2="${R(hx-22)}" y2="${R(hy-6)}" stroke="${INK}" stroke-width="6.5" stroke-linecap="round"/><line x1="${R(hx)}" y1="${R(hy)}" x2="${R(hx-22)}" y2="${R(hy-6)}" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/><circle cx="${R(hx-31)}" cy="${R(hy-8)}" r="9" fill="none" stroke="${INK}" stroke-width="6"/><circle cx="${R(hx-31)}" cy="${R(hy-8)}" r="9" fill="none" stroke="${c}" stroke-width="3"/>`;
+const candy=(hx,hy)=>bubble(hx,hy-15,11);
+const leafIt=(hx,hy)=>leafShape(hx+2,hy-10,30,'#d9533b',1.5);
+const acornIt=(hx,hy)=>acorn(hx,hy-10,1.2);
+const pop=(hx,hy)=>{let s='';for(let i=0;i<8;i++){const a=i*45*D;s+=`<line x1="${R(hx+Math.cos(a)*13)}" y1="${R(hy-14+Math.sin(a)*13)}" x2="${R(hx+Math.cos(a)*22)}" y2="${R(hy-14+Math.sin(a)*22)}" stroke="#5aa6e6" stroke-width="2.6" stroke-linecap="round"/>`}return s+`<circle cx="${R(hx)}" cy="${R(hy-14)}" r="5" fill="#fff" stroke="#86bde9" stroke-width="1.4"/>`};
+function bottles(x,y){const cs=[['#e7dbff','#8a5cc4'],['#ffe1ec','#f06d9b'],['#ffe0dc','#e23b3b']];let s='';cs.forEach(([b,c],i)=>{const bx=x+(i-1)*22,by=y-Math.abs(i-1)*-6,rot=(i-1)*14;
+  s+=`<g transform="translate(${R(bx)},${R(by)}) rotate(${rot})"><line x1="0" y1="-40" x2="0" y2="-54" stroke="${c}" stroke-width="3"/><circle cx="0" cy="-62" r="8" fill="none" stroke="${c}" stroke-width="3"/><rect x="-9" y="-34" width="18" height="34" rx="5" fill="${b}" ${ST}/><rect x="-7" y="-42" width="14" height="9" rx="2" fill="${c}" ${ST}/></g>`});
+  [[-46,-60],[48,-66],[-36,-92],[38,-96],[0,-104]].forEach(([dx,dy])=>{s+=`<path d="M${x+dx},${y+dy-7} V${y+dy+7} M${x+dx-7},${y+dy} H${x+dx+7}" stroke="#f2b545" stroke-width="3" stroke-linecap="round"/>`});return s}
+const tote=(x,y,s=1)=>`<g transform="translate(${x},${y}) scale(${s})"><path d="M-22,-58 Q-22,-86 0,-86 Q22,-86 22,-58" fill="none" stroke="${INK}" stroke-width="3.5"/><rect x="-24" y="-74" width="16" height="22" rx="3" fill="#fff1b8" ${ST}/><rect x="2" y="-70" width="20" height="18" rx="3" fill="#ffd1dc" ${ST}/><path d="M-42,0 L-35,-60 H35 L42,0Z" fill="#4f9e8a" ${ST}/></g>`;
+function lunchbox(x,y,s){return `<g transform="translate(${x},${y}) scale(${s})"><rect x="-58" y="-36" width="116" height="42" rx="8" fill="#f6e7c8" ${ST}/><line x1="0" y1="-36" x2="0" y2="6" stroke="${INK}" stroke-width="2"/>`
+  +leafShape(-40,-16,40,'#d9533b',1.3)+leafShape(-24,-20,-30,'#f2c14e',1.3)+leafShape(-14,-10,80,'#e9894a',1)
+  +acorn(16,-18)+acorn(30,-12)+pinecone(46,-15,.9)+`<rect x="70" y="-6" width="60" height="10" rx="4" fill="#f9d8a8" ${ST} transform="rotate(-8 100 0)"/></g>`}
+const bench=(x,y,s=1)=>`<g transform="translate(${x},${y}) scale(${s})"><rect x="-96" y="-50" width="10" height="50" fill="#7a4e30" ${ST}/><rect x="86" y="-50" width="10" height="50" fill="#7a4e30" ${ST}/><rect x="-106" y="-92" width="212" height="14" rx="4" fill="#b8784a" ${ST}/><rect x="-110" y="-52" width="220" height="14" rx="4" fill="#c98a55" ${ST}/></g>`;
+
+/* ---------- people ---------- */
+function face(m){
+  const blush=`<ellipse cx="-19" cy="-113" rx="6" ry="3.5" fill="#f29a9a" opacity=".75"/><ellipse cx="19" cy="-113" rx="6" ry="3.5" fill="#f29a9a" opacity=".75"/>`;
+  const dot=(x,r=3.4)=>`<circle cx="${x}" cy="-124" r="${r}" fill="${INK}"/>`;
+  const arc=d=>`<path d="${d}" stroke="${INK}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  let e,mo;
+  if(m==='wow'){e=dot(-11,4.3)+dot(11,4.3)+`<circle cx="-9.6" cy="-125.6" r="1.4" fill="#fff"/><circle cx="12.4" cy="-125.6" r="1.4" fill="#fff"/>`;mo=`<ellipse cx="0" cy="-109" rx="5" ry="6.5" fill="#b9504a" ${ST}/>`}
+  else if(m==='blow'){e=dot(-11)+dot(11);mo=`<circle cx="7" cy="-110" r="3.6" fill="#f7b3a8" stroke="${INK}" stroke-width="2.2"/>`}
+  else if(m==='happy'){e=arc('M-15,-122 Q-11,-128 -7,-122 M7,-122 Q11,-128 15,-122');mo=`<path d="M-8,-113 Q0,-101 8,-113Z" fill="#b9504a" ${ST}/>`}
+  else if(m==='sleepy'){e=arc('M-15,-123 Q-11,-119 -7,-123 M7,-123 Q11,-119 15,-123');mo=`<ellipse cx="0" cy="-109" rx="5.5" ry="7.5" fill="#9e443f" ${ST}/>`}
+  else{e=dot(-11)+dot(11);mo=arc('M-7,-113 Q0,-106 7,-113')}
+  return e+mo+blush;
+}
+function hairBack(k,back){
+  const h=k.hair;
+  if(k.style==='bob')return `<path d="M-34,-126 Q-36,-164 0,-164 Q36,-164 34,-126 L34,-102 Q22,-98 18,-106 L-18,-106 Q-22,-98 -34,-102Z" fill="${h}" ${ST}/>`;
+  if(k.style==='long')return `<path d="M-34,-126 Q-36,-164 0,-164 Q36,-164 34,-126 L37,-84 Q24,-80 20,-94 L-20,-94 Q-24,-80 -37,-84Z" fill="${h}" ${ST}/>`;
+  let s=`<path d="M-33,-124 Q-34,-162 0,-162 Q34,-162 33,-124Z" fill="${h}" ${ST}/>`;
+  if(!back)s+=`<path d="M20,-150 Q62,-154 56,-112 Q52,-92 41,-102 Q48,-132 18,-138Z" fill="${h}" ${ST}/><path d="M33,-147 Q54,-140 47,-108" stroke="${k.streak}" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="24" cy="-147" r="6" fill="${k.tie}" ${ST}/>`;
+  return s;
+}
+function hairFront(k){
+  const h=k.hair;
+  const bangs=`<path d="M-31,-130 Q-30,-160 0,-160 Q30,-160 31,-130 Q24,-142 12,-140 Q6,-148 0,-142 Q-8,-148 -14,-140 Q-24,-142 -31,-130Z" fill="${h}" ${ST}/>`;
+  if(k.style==='bob')return bangs+`<rect x="8" y="-155" width="19" height="7" rx="3.5" fill="${k.pin}" ${ST} transform="rotate(-20 17 -151)"/>`;
+  if(k.style==='long')return bangs+`<rect x="-27" y="-155" width="19" height="7" rx="3.5" fill="${k.pin}" ${ST} transform="rotate(20 -17 -151)"/>`;
+  return `<path d="M-31,-128 Q-30,-160 0,-160 Q30,-160 31,-128 Q20,-148 -6,-146 Q-20,-146 -31,-128Z" fill="${h}" ${ST}/>`;
+}
+function hairBackView(k){
+  let s=`<circle cx="0" cy="-126" r="31" fill="${k.hair}" ${ST}/>`;
+  if(k.style==='pony')s+=`<path d="M-9,-150 Q-19,-112 0,-92 Q19,-112 9,-150Z" fill="${k.hair}" ${ST}/><path d="M3,-144 Q9,-120 3,-100" stroke="${k.streak}" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="0" cy="-150" r="6" fill="${k.tie}" ${ST}/>`;
+  if(k.style==='bob')s+=`<rect x="-27" y="-155" width="19" height="7" rx="3.5" fill="${k.pin}" ${ST} transform="rotate(20 -17 -151)"/>`;
+  if(k.style==='long')s+=`<rect x="8" y="-155" width="19" height="7" rx="3.5" fill="${k.pin}" ${ST} transform="rotate(-20 17 -151)"/>`;
+  return s;
+}
+function kid(c,x,y,o={}){
+  const k=K[c],s=o.s||1,f=o.flip?-1:1,L=38,sy=-86;
+  const aL=(o.aL??12)*D,aR=(o.aR??12)*D;
+  const lx=-20-Math.sin(aL)*L,ly=sy+Math.cos(aL)*L,rx=20+Math.sin(aR)*L,ry=sy+Math.cos(aR)*L;
+  const pf=k.pants==='check'?`url(#${P}check)`:k.pants;
+  let g='';
+  if(o.sit){
+    g+=`<rect x="-16" y="-52" width="40" height="15" rx="7" fill="${pf}" ${ST}/><rect x="12" y="-50" width="13" height="40" rx="6" fill="${pf}" ${ST}/><ellipse cx="22" cy="-9" rx="11" ry="6" fill="#fff" ${ST}/>`;
+  }else{
+    g+=`<rect x="-15" y="-50" width="12" height="46" rx="5" fill="${pf}" ${ST}/><rect x="3" y="-50" width="12" height="46" rx="5" fill="${pf}" ${ST}/>`;
+    if(k.stripe)g+=`<path d="M-13,-46 V-9 M13,-46 V-9" stroke="#fff" stroke-width="2"/>`;
+    g+=`<ellipse cx="-10" cy="-4" rx="10" ry="6" fill="#fff" ${ST}/><ellipse cx="10" cy="-4" rx="10" ry="6" fill="#fff" ${ST}/>`;
+  }
+  g+=`<path d="M-22,-94 Q-25,-66 -21,-44 Q0,-40 21,-44 Q25,-66 22,-94 Q0,-102 -22,-94Z" fill="${k.top}" ${ST}/>`;
+  if(k.stripe)g+=`<path d="M0,-97 V-43" stroke="#fff" stroke-width="2"/>`;
+  g+=hairBack(k,o.back);
+  g+=`<circle cx="0" cy="-126" r="30" fill="${k.skin}" ${ST}/>`;
+  g+=o.back?hairBackView(k):face(o.mood||'smile')+hairFront(k);
+  g+=limb(-20,sy,lx,ly,k.top,10)+`<circle cx="${R(lx)}" cy="${R(ly)}" r="6" fill="${k.skin}" ${ST}/>`;
+  g+=limb(20,sy,rx,ry,k.top,10)+`<circle cx="${R(rx)}" cy="${R(ry)}" r="6" fill="${k.skin}" ${ST}/>`;
+  if(o.holdR)g+=o.holdR(rx,ry);
+  if(o.holdL)g+=o.holdL(lx,ly);
+  return `<g transform="translate(${x},${y}) scale(${s*f},${s})">${g}</g>`;
+}
+function adult(c,x,y,o={}){
+  const a=A[c],s=o.s||1,f=o.flip?-1:1,L=70,sy=-192;
+  const aL=(o.aL??10)*D,aR=(o.aR??10)*D;
+  const lx=-24-Math.sin(aL)*L,ly=sy+Math.cos(aL)*L,rx=24+Math.sin(aR)*L,ry=sy+Math.cos(aR)*L;
+  const h=a.hair;let g='';
+  g+=`<rect x="-18" y="-104" width="14" height="100" rx="5" fill="${a.pants}" ${ST}/><rect x="4" y="-104" width="14" height="100" rx="5" fill="${a.pants}" ${ST}/>`;
+  g+=`<ellipse cx="-12" cy="-4" rx="12" ry="6" fill="#5a463c" ${ST}/><ellipse cx="12" cy="-4" rx="12" ry="6" fill="#5a463c" ${ST}/>`;
+  if(a.style==='bob')g+=`<path d="M-30,-228 Q-32,-262 0,-262 Q32,-262 30,-228 L30,-204 Q18,-202 16,-210 L-16,-210 Q-18,-202 -30,-204Z" fill="${h}" ${ST}/>`;
+  if(a.style==='long')g+=`<path d="M-30,-228 Q-32,-262 0,-262 Q32,-262 30,-228 L33,-178 Q20,-174 18,-190 L-18,-190 Q-20,-174 -33,-178Z" fill="${h}" ${ST}/>`;
+  if(a.style==='bun')g+=`<circle cx="0" cy="-262" r="13" fill="${h}" ${ST}/>`;
+  g+=`<path d="M-26,-198 Q-31,-150 -31,-96 H31 Q31,-150 26,-198 Q0,-208 -26,-198Z" fill="${a.coat}" ${ST}/><path d="M0,-200 V-98" stroke="${INK}" stroke-width="1.6"/>`;
+  g+=`<circle cx="0" cy="-228" r="26" fill="${a.skin}" ${ST}/>`;
+  const m=o.mood||'smile';
+  g+=`<circle cx="-9" cy="-227" r="2.7" fill="${INK}"/><circle cx="9" cy="-227" r="2.7" fill="${INK}"/>`;
+  g+=m==='wow'?`<ellipse cx="0" cy="-213" rx="4.5" ry="5.5" fill="#b9504a" ${ST}/>`:`<path d="M-6,-216 Q0,-210 6,-216" stroke="${INK}" stroke-width="2.3" fill="none" stroke-linecap="round"/>`;
+  g+=`<ellipse cx="-16" cy="-217" rx="5" ry="3" fill="#f29a9a" opacity=".6"/><ellipse cx="16" cy="-217" rx="5" ry="3" fill="#f29a9a" opacity=".6"/>`;
+  if(a.glasses)g+=`<circle cx="-10" cy="-227" r="8" fill="none" stroke="${INK}" stroke-width="2"/><circle cx="10" cy="-227" r="8" fill="none" stroke="${INK}" stroke-width="2"/><path d="M-2,-228 H2" stroke="${INK}" stroke-width="2"/>`;
+  if(a.style==='short')g+=`<path d="M-27,-232 Q-29,-262 0,-262 Q29,-262 27,-232 Q22,-248 4,-246 Q-14,-252 -27,-232Z" fill="${h}" ${ST}/>`;
+  else if(a.style==='bun')g+=`<path d="M-27,-230 Q-28,-258 0,-258 Q28,-258 27,-230 Q14,-246 0,-244 Q-14,-246 -27,-230Z" fill="${h}" ${ST}/>`;
+  else g+=`<path d="M-27,-232 Q-27,-258 0,-258 Q27,-258 27,-232 Q14,-244 0,-240 Q-14,-244 -27,-232Z" fill="${h}" ${ST}/>`;
+  if(a.bag&&o.bag!==false)g+=`<path d="M${R(rx-8)},${R(ry)} L${R(rx-14)},${R(ry+14)} M${R(rx+8)},${R(ry)} L${R(rx+14)},${R(ry+14)}" stroke="${INK}" stroke-width="3"/><path d="M${R(rx-24)},${R(ry+14)} H${R(rx+24)} L${R(rx+20)},${R(ry+56)} H${R(rx-20)}Z" fill="${a.bag}" ${ST}/>`;
+  g+=limb(-24,sy,lx,ly,a.coat,12)+`<circle cx="${R(lx)}" cy="${R(ly)}" r="6.5" fill="${a.skin}" ${ST}/>`;
+  g+=limb(24,sy,rx,ry,a.coat,12)+`<circle cx="${R(rx)}" cy="${R(ry)}" r="6.5" fill="${a.skin}" ${ST}/>`;
+  if(o.holdR)g+=o.holdR(rx,ry);
+  return `<g transform="translate(${x},${y}) scale(${s*f},${s})">${g}</g>`;
+}
+function swingFrame(cx,half,top,gy){
+  const W='#c0703a',x0=cx-half,x1=cx+half;
+  return limb(x0-34,gy,x0,top,W,10)+limb(x0+34,gy,x0,top,W,10)+limb(x1-34,gy,x1,top,W,10)+limb(x1+34,gy,x1,top,W,10)+limb(x0-6,top,x1+6,top,W,12);
+}
+function recipeIcons(){
+  const y=470;let s='';
+  s+=`<g transform="translate(120,${y})"><rect x="-20" y="-46" width="40" height="46" rx="8" fill="#e7f3ff" ${ST}/><path d="M-20,-30 H20" stroke="#86bde9" stroke-width="2"/><line x1="10" y1="-80" x2="0" y2="-24" stroke="${INK}" stroke-width="6" stroke-linecap="round"/><line x1="10" y1="-80" x2="0" y2="-24" stroke="#f06d9b" stroke-width="3"/><circle cx="12" cy="-90" r="9" fill="none" stroke="#f06d9b" stroke-width="3"/></g>`;
+  s+=`<g transform="translate(300,${y})"><circle cx="-14" cy="-40" r="28" fill="#f5d3b8" ${ST}/><circle cx="-23" cy="-46" r="3" fill="${INK}"/><circle cx="-5" cy="-46" r="3" fill="${INK}"/><circle cx="-6" cy="-30" r="4" fill="#f7b3a8" stroke="${INK}" stroke-width="2"/>${bubble(30,-50,10)}${bubble(48,-66,6)}</g>`;
+  s+=`<g transform="translate(480,${y})"><path d="M-34,-14 Q-36,-34 -10,-34 H24 Q36,-34 34,-22 Q34,-12 22,-12 H-20 Q-32,-12 -34,-14Z" fill="#f5d3b8" ${ST}/>${bubble(4,-50,15)}</g>`;
+  s+=`<g transform="translate(660,${y})">${sun(34,-74,13)}${bubble(-6,-40,26)}<path d="M-26,-40 A20,20 0 0 1 -6,-60" stroke="#f2c4ff" stroke-width="4" fill="none"/></g>`;
+  ['하나','둘','셋','넷'].forEach((t,i)=>{s+=`<text x="${120+i*180}" y="${y+40}" font-family="Gaegu, sans-serif" font-weight="700" font-size="26" fill="${INK}" text-anchor="middle">${t}</text>`});
+  return s;
+}
+function notebook(){let s=`<rect width="800" height="560" fill="#fbf3df"/>`;for(let y=70;y<=390;y+=40)s+=`<line x1="40" y1="${y}" x2="770" y2="${y}" stroke="#eadcbb" stroke-width="1.5"/>`;return s+`<line x1="54" y1="20" x2="54" y2="410" stroke="#f0b4a8" stroke-width="2"/>`}
+
+
+const speed=(x,y)=>`<path d="M${x-44},${y-44} h-34 M${x-38},${y-18} h-46 M${x-44},${y+8} h-30" stroke="${INK}" stroke-width="3.5" stroke-linecap="round" opacity=".35"/>`;
+
+/* ---------- scenes (one page each, or a full spread) ---------- */
+const S={
+ cover:{no:'표지',cap:'몽실몽실 비눗방울 (제목)',
+  draw:()=>sky(800,560)+cloud(140,210,.9)+cloud(660,165,1.1)+bubbles(22,90,175,710,330,8,28,3)+ground(800,560,452)+tree(70,475,.85,AUT.o)+tree(735,470,.8,AUT.r)+leaves(14,20,470,780,550,5)
+    +kid('nari',250,515,{s:1.12,aR:120,mood:'blow',holdR:wand(K.nari.wand)})+kid('sol',400,515,{s:1.12,aL:150,aR:150,mood:'happy'})+kid('dahong',550,515,{s:1.12,flip:true,aR:120,mood:'blow',holdR:wand(K.dahong.wand)}),
+  texts:[{cls:'title',style:'left:0;right:0;top:5%',html:'몽실몽실 비눗방울<small>글·그림 시안</small>'}]},
+ park:{no:'1쪽',
+  draw:()=>sky(800,560)+cloud(610,95,.8)+ground(800,560,400)+`<path d="M330,560 L372,402 Q400,396 428,402 L520,560Z" fill="#ead9b0" ${ST}/>`
+    +tree(250,408,.65,AUT.y)+tree(110,440,1.1,AUT.o)+tree(650,428,1,AUT.r)+tree(765,445,.75,AUT.y)+leaves(9,150,170,700,370,9)+leaves(10,10,470,790,550,12)
+    +adult('dad',500,520,{s:.9,aL:5,aR:12})+kid('nari',430,515,{s:.9,aR:130,mood:'happy'}),
+  texts:[{style:'left:5%;top:6%;width:56%',html:'<p>노랗고 빨간 가을 공원.</p><p>나리는 아빠 손을 잡고 놀러 왔어요.</p>'}]},
+ meet:{no:'2쪽',
+  draw:()=>sky(800,560)+ground(800,560,420)+tree(60,440,.7,AUT.y)+tree(750,440,.7,AUT.o)+leaves(10,10,480,790,550,21)
+    +adult('dad',330,470,{s:.7})+adult('solmom',215,512,{s:.85,aR:14})+kid('sol',140,522,{s:.85,aL:150,mood:'wow'})
+    +adult('hongmom',590,512,{s:.85,flip:true})+kid('dahong',662,522,{s:.85,flip:true,aL:150,mood:'wow'})
+    +kid('nari',400,528,{s:.95,aL:140,aR:140,mood:'wow'})+bang(140,372)+bang(400,362)+bang(662,372),
+  texts:[{style:'left:5%;top:5%;width:90%',html:'<p>“어? 솔이다!” “다홍이도 있네!”</p><p>유치원 친구들을 공원에서 우연히 만났어요.</p>'}]},
+ tada:{no:'3쪽',
+  draw:()=>sky(800,560)+ground(800,560,430)+tree(735,452,.9,AUT.r)+leaves(8,10,480,790,550,33)+tote(150,532,1.1)
+    +adult('solmom',255,535,{s:1.05,aR:150,mood:'wow',bag:false,holdR:(hx,hy)=>bottles(hx,hy-4)})
+    +kid('nari',470,532,{s:.95,flip:true,aL:150,aR:150,mood:'wow'})+kid('sol',575,532,{s:.95,flip:true,aR:40,mood:'happy'})+kid('dahong',680,532,{s:.95,flip:true,aR:140,mood:'wow'}),
+  texts:[{style:'left:45%;top:5%;width:52%',html:'<p>솔이 엄마 가방에는 없는 게 없어요.</p><p>“짜잔!” 비눗방울이 하나, 둘, 셋!</p><p>딱 한 사람에 하나씩이에요.</p>'}]},
+ blow:{no:'4쪽',
+  draw:()=>sky(800,560)+cloud(560,80,.8)+ground(800,560,452)+tree(745,472,.75,AUT.y)+leaves(8,10,480,790,550,44)
+    +bubbles(38,230,150,790,420,6,32,7)
+    +kid('nari',170,520,{aR:120,mood:'blow',holdR:wand(K.nari.wand)})+kid('sol',330,520,{aR:120,mood:'blow',holdR:wand(K.sol.wand)})+kid('dahong',490,520,{aR:120,mood:'blow',holdR:wand(K.dahong.wand)}),
+  texts:[{style:'left:5%;top:5%;width:48%',html:'<p>후— 후— 후—</p><p>비눗방울이 동글동글 날아올라요.</p>'}]},
+ lunch:{no:'5쪽',
+  draw:()=>sky(800,560)+ground(800,560,380,'#d3d98c')+tree(90,400,1,AUT.o)+leaves(26,10,420,790,550,55)+lunchbox(420,505,1.5)
+    +kid('sol',300,528,{s:1.15,aL:20,aR:75,mood:'happy'})
+    +kid('nari',575,522,{flip:true,aR:95,holdR:leafIt})+kid('dahong',690,522,{flip:true,aR:80,holdR:acornIt}),
+  texts:[{style:'left:5%;top:5%;width:66%',html:'<p>솔이는 도시락을 싸요.</p><p>빨간 잎, 노란 잎, 동글동글 도토리, 솔방울도 하나.</p><p>“이건 가을 도시락이야!”</p>'}]},
+ recipe:{no:'6–7쪽',full:true,
+  cap:'비눗방울 알사탕 제조법 — 하나, 막대를 살짝 담가요. 둘, 아주아주 살살 불어요. 셋, 손바닥으로 톡 받아요. 넷, 무지개 빛이 돌면 완성! / 입에 쏙 넣으면… 톡! 가을바람 맛이 나요.',
+  draw:()=>notebook()+recipeIcons()+`<g transform="translate(800,0)">${sky(800,560)}${ground(800,560,450)}${tree(745,470,.7,AUT.r)}${leaves(8,10,480,790,550,66)}</g>`
+    +bubbles(10,860,200,1560,370,6,16,21)
+    +kid('nari',990,522,{aR:70,mood:'happy',holdR:candy})+kid('sol',1175,522,{aR:125,mood:'wow',holdR:candy})+kid('dahong',1360,522,{flip:true,aR:70,mood:'happy',holdR:candy}),
+  texts:[{cls:'recipe',style:'left:5%;top:4.5%;width:42%',html:'<div class="rt">비눗방울 알사탕 제조법</div><div class="rs">준비물: 비눗방울 물 한 통, 동그란 막대 하나, 햇살 한 줌, 친구 둘</div><ol><li>하나. 막대를 비눗방울 물에 살짝 담가요.</li><li>둘. 숨을 고르고, 아주아주 살살 불어요. 후—</li><li>셋. 작은 방울이 생기면 손바닥으로 톡 받아요.</li><li>넷. 햇빛에 비춰 봐요. 무지개 빛이 돌면 완성!</li></ol>'},
+         {style:'left:54%;top:5%;width:42%',html:'<p>하나는 나리, 하나는 솔이, 하나는 다홍이.</p><p>입에 쏙 넣으면… 톡!</p><p>가을바람 맛이 나요.</p>'}]},
+ mom:{no:'8쪽',
+  draw:()=>sky(800,560)+ground(800,560,410)+tree(740,430,.8,AUT.o)+leaves(10,10,470,790,550,77)
+    +adult('dad',115,445,{s:.6})+adult('solmom',190,445,{s:.6,bag:false})+adult('hongmom',265,445,{s:.6})+bench(190,452,.75)
+    +kid('sol',350,472,{s:.7})+kid('dahong',412,472,{s:.7,flip:true})
+    +kid('nari',505,528,{aL:145,aR:145,mood:'happy'})+adult('narimom',655,528,{flip:true,aR:155}),
+  texts:[{style:'left:5%;top:5%;width:62%',html:'<p>“나리야~!” 나리 엄마도 공원에 왔어요.</p><p>“엄마, 비눗방울 알사탕 먹어 볼래?”</p>'}]},
+ run:{no:'9쪽',
+  draw:()=>sky(800,560)+cloud(560,90,.8)+ground(800,560,420)+tree(70,440,.8,AUT.y)
+    +swingFrame(665,52,292,432)+`<path d="M652,292 V384 M678,292 V384" stroke="${INK}" stroke-width="2.2"/><rect x="644" y="381" width="42" height="7" rx="2" fill="#b8784a" ${ST}/>`
+    +leaves(12,80,200,560,400,91)+leaves(10,10,470,790,550,92)
+    +speed(200,440)+speed(330,428)+speed(460,440)
+    +kid('dahong',230,525,{aL:150,aR:35,mood:'happy'})+kid('nari',360,512,{aL:35,aR:150,mood:'happy'})+kid('sol',490,525,{aL:150,aR:35,mood:'wow'}),
+  texts:[{style:'left:5%;top:5%;width:58%',html:'<p>“저기 그네다!”</p><p>셋이 함께 달려가요. 다다다다—</p>'}]},
+ swing:{no:'10쪽',
+  draw:()=>sky(800,560)+cloud(660,100,.8)+ground(800,560,450)+tree(70,470,.8,AUT.y)+leaves(8,10,480,790,550,88)
+    +swingFrame(430,140,165,528)+`<path d="M403,165 V410 M457,165 V410" stroke="${INK}" stroke-width="3"/><rect x="396" y="406" width="68" height="10" rx="3" fill="#b8784a" ${ST}/>`
+    +kid('sol',430,455,{sit:true,aL:170,aR:170,mood:'happy'})
+    +kid('dahong',335,522,{aR:80,aL:-50})
+    +bubbles(12,490,250,640,400,6,20,31)+kid('nari',690,522,{flip:true,aR:120,mood:'blow',holdR:wand(K.nari.wand)}),
+  texts:[{style:'left:5%;top:4.5%;width:90%',html:'<p>다홍이가 밀어 주고, 솔이가 타고,</p><p>나리는 비눗방울을 불어요.</p>'}]},
+ catch:{no:'11쪽',
+  draw:()=>sky(800,560)+cloud(620,70,.9)+tree(70,700,1.4,AUT.o)+tree(730,690,1.3,AUT.r)
+    +bubbles(16,450,70,780,330,8,30,41)+bubbles(5,40,250,250,420,6,18,42)
+    +`<path d="M330,0 V468 M405,0 V468" stroke="${INK}" stroke-width="3.5"/><rect x="322" y="463" width="92" height="12" rx="3" fill="#b8784a" ${ST}/>`
+    +kid('sol',365,544,{s:1.7,sit:true,aL:172,aR:158,mood:'wow',holdR:pop}),
+  texts:[{style:'left:5%;top:5%;width:44%',html:'<p>슝— 올라갈 때 톡!</p><p>슝— 내려올 때 톡!</p>'},{cls:'big',style:'right:5%;bottom:8%;text-align:right',html:'“잡았다!”'}]},
+ sky:{no:'12–13쪽',full:true,
+  draw:()=>sky(1600,560,'deep')+cloud(380,150,1.2)+cloud(1290,175,1)+cloud(930,95,.8)
+    +bubbles(70,80,40,1540,440,8,58,11,(x,y,r)=>(x-r<720&&y-r<230)||(y+r>455&&x>660&&x<940))
+    +ground(1600,560,470)+tree(70,500,1.1,AUT.o)+tree(1440,482,.6,AUT.y)+tree(1532,505,1,AUT.r)+leaves(12,10,500,1590,555,99)
+    +adult('dad',1165,482,{s:.48})+adult('narimom',1215,482,{s:.48})+adult('solmom',1265,482,{s:.48,bag:false})+adult('hongmom',1315,482,{s:.48})
+    +kid('nari',720,545,{back:true,aL:20,aR:150})+kid('sol',800,545,{back:true})+kid('dahong',880,545,{back:true,aL:150}),
+  texts:[{cls:'light',style:'left:4%;top:5%;width:36%',html:'<p>몽실몽실, 비눗방울이 올라가요.</p><p>높이, 더 높이.</p><p>파란 가을 하늘까지 닿을 것 같아요.</p>'}]},
+ yawn:{no:'14쪽',
+  draw:()=>sky(800,560,'eve')+sun(640,425,48,'#ffc76a')+ground(800,560,420,'#c7b26c')+tree(60,440,.7,AUT.d)+tree(760,436,.65,AUT.d)
+    +adult('dad',130,525,{s:.85})+kid('nari',205,528,{s:.85,aR:160,mood:'sleepy'})+adult('narimom',285,525,{s:.85,flip:true})
+    +kid('sol',420,528,{s:.85,aL:165,aR:165,mood:'sleepy'})+adult('solmom',500,525,{s:.85,flip:true})
+    +kid('dahong',615,528,{s:.85,mood:'sleepy'})+adult('hongmom',690,525,{s:.85,flip:true}),
+  texts:[{style:'left:5%;top:5%;width:82%',html:'<p>하아암— 솔이가 하품을 해요.</p><p>하아암— 나리도, 다홍이도.</p><p>솔이가 졸린 눈으로 말해요. “우리 이제 집에 가자.”</p>'}]},
+ bye:{no:'15쪽',
+  draw:()=>sky(800,560,'eve')+sun(130,438,40,'#ffb85c')+ground(800,560,430,'#c7b26c')+tree(740,450,.7,AUT.d)
+    +bubble(650,215,24)
+    +adult('dad',110,470,{s:.6})+adult('narimom',165,470,{s:.6,flip:true})+adult('solmom',400,462,{s:.6,bag:false})+adult('hongmom',640,470,{s:.6,flip:true})
+    +kid('nari',230,538,{s:.9,aL:155,mood:'happy'})+kid('sol',400,538,{s:.9,aL:155,aR:155,mood:'happy'})+kid('dahong',570,538,{s:.9,flip:true,aL:155,mood:'happy'}),
+  texts:[{style:'left:5%;top:5%;width:70%',html:'<p>“내일 유치원에서 또 만나!”</p><p>하늘에는 비눗방울 하나가 아직 몽실몽실.</p>'},{cls:'big',style:'right:5%;bottom:5%',html:'끝'}]}
+};
+
+/* ---------- the book, one opened spread per row ---------- */
+const rows=[
+ {label:'표지',L:'뒤표지',R:'cover',
+  memo:'책을 덮었을 때 오른쪽 면이 앞표지예요. 세 친구와 비눗방울을 한 장에 담고, 제목이 들어갈 하늘을 넓게 비워 두었어요.'},
+ {label:'1쪽',L:'면지',R:'park',
+  memo:'표지를 넘기면 왼쪽은 면지(색지)이고, 오른쪽 1쪽부터 이야기가 시작돼요. 길이 안쪽으로 이어지게 그려서 이야기 속으로 걸어 들어가는 느낌을 주었어요.'},
+ {label:'2–3쪽',L:'meet',R:'tada',
+  memo:'마주 보는 두 쪽이에요. 왼쪽은 우연한 만남, 오른쪽은 솔이 엄마의 ‘짜잔!’ 순간이에요. 아이들 표정을 모두 놀란 얼굴로 맞춰서 기대감을 키웠어요.'},
+ {label:'4–5쪽',L:'blow',R:'lunch',
+  memo:'신나는 쪽(후—)과 조용한 쪽(솔이의 도시락)을 나란히 두어 리듬을 만들었어요. 비눗방울이 오른쪽으로 흘러가서 눈이 자연스럽게 오른쪽 쪽으로 이어져요.'},
+ {label:'6–7쪽',F:'recipe',
+  memo:'백희나 작가의 『알사탕 제조법』처럼 ‘만드는 순서’를 정성스러운 의식처럼 보여 주는 형식을 빌렸어요. 왼쪽은 공책에 적은 제조법, 오른쪽은 나눠 먹는 장면이에요. 형식은 참고했지만 글과 그림은 우리 이야기에 맞게 새로 썼어요.'},
+ {label:'8–9쪽',L:'mom',R:'run',
+  memo:'왼쪽에서 나리 엄마가 합류하고, 오른쪽에서 아이들이 그네로 달려가요. 오른쪽 끝을 향해 달리는 장면은 다음 장을 넘기고 싶게 만들어요.'},
+ {label:'10–11쪽',L:'swing',R:'catch',
+  memo:'왼쪽은 그네 전체를 넓게, 오른쪽은 솔이를 크게 당겨 그렸어요. 마주 보는 두 쪽의 크기 차이 덕분에 ‘잡았다!’의 기쁨이 커져요.'},
+ {label:'12–13쪽',F:'sky',
+  memo:'이야기에서 가장 아름다운 절정이에요. 펼침면 전체를 하늘로 쓰고 아이들은 작은 뒷모습으로 그려서, 읽는 사람도 아이들과 함께 하늘을 올려다보게 했어요.'},
+ {label:'14–15쪽',L:'yawn',R:'bye',
+  memo:'하늘을 해 질 녘 색으로 바꿔 하루가 끝났음을 알려요. 왼쪽에서 하품이 옮아가고, 오른쪽에서 인사하며 끝나요. 하늘에 남은 비눗방울 하나가 여운을 남겨요.'}
+];
+
+const plain=h=>h.replace(/<small>.*?<\/small>/g,'').replace(/<\/(p|li|div)>/g,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+function pageSheet(id,where){
+  const s=S[id];P=`${where}-${id}-`;
+  const w=s.full?1600:800;
+  const svg=`<svg viewBox="0 0 ${w} 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${s.no} 그림">${defs()}${s.draw()}</svg>`;
+  return `<div class="sheet ${s.full?'full':''}">${svg}${s.texts.map(x=>`<div class="txt ${x.cls||''}" style="${x.style}">${x.html}</div>`).join('')}</div>`;
+}
+const blank=n=>`<div class="sheet blank"><span>${n}</span></div>`;
+const sideHTML=(v,where)=>S[v]?pageSheet(v,where):blank(v);
+function rowHTML(r,where){
+  const ids=r.F?[r.F]:[r.L,r.R].filter(v=>S[v]);
+  const inner=r.F?pageSheet(r.F,where):sideHTML(r.L,where)+sideHTML(r.R,where);
+  const cap=ids.map(id=>`<p><b>${S[id].no}</b>${S[id].cap||S[id].texts.map(t=>plain(t.html)).join(' ')}</p>`).join('');
+  return `<div class="row"><div class="lab"><b>${r.label}</b>${r.F?' · 펼침면':''}</div><div class="spreadbox ${r.F?'full':''}">${inner}</div><div class="cap">${cap}</div><p class="rmemo">${r.memo}</p></div>`;
+}
+
+/* ---------- views ---------- */
+let cur=0;
+try{const v=parseInt(localStorage.getItem('mongsil-row'),10);if(v>=0&&v<rows.length)cur=v}catch(e){}
+const $=id=>document.getElementById(id);
+function show(i){
+  cur=Math.max(0,Math.min(rows.length-1,i));
+  const r=rows[cur];
+  $('stage').innerHTML=rowHTML(r,'f');
+  $('pos').innerHTML=`<b>${r.label}</b> <span>(${cur+1}/${rows.length})</span>`;
+  $('memo').textContent=r.memo;
+  $('prev').disabled=cur===0;$('next').disabled=cur===rows.length-1;
+  [...$('dots').children].forEach((d,j)=>d.setAttribute('aria-current',j===cur?'true':'false'));
+  try{localStorage.setItem('mongsil-row',String(cur))}catch(e){}
+}
+$('dots').innerHTML=rows.map(r=>`<button aria-label="${r.label}로 이동"></button>`).join('');
+[...$('dots').children].forEach((d,i)=>d.addEventListener('click',()=>show(i)));
+$('prev').addEventListener('click',()=>show(cur-1));
+$('next').addEventListener('click',()=>show(cur+1));
+document.addEventListener('keydown',e=>{if($('v-flip').hidden)return;if(e.key==='ArrowLeft')show(cur-1);if(e.key==='ArrowRight')show(cur+1)});
+
+$('grid').innerHTML=rows.map((r,i)=>`<button class="cell" data-i="${i}">${rowHTML(r,'g'+i)}</button>`).join('');
+$('grid').addEventListener('click',e=>{const c=e.target.closest('.cell');if(!c)return;tab('flip');show(+c.dataset.i);window.scrollTo({top:0})});
+
+function portrait(svgBody,vb,id){P=`c${id}-`;return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${defs()}${svgBody}</svg>`}
+const sw=c=>`<span class="sw" style="background:${c}"></span>`;
+const kidsInfo=[
+  {id:'nari',why:'노란 삔이 개나리꽃 같아서 ‘나리’예요.',items:[[K.nari.top,'보라색 추리닝 위아래'],[K.nari.pin,'노란 삔'],[K.nari.hair,'단발머리']],role:'비눗방울을 불어 주는 아이'},
+  {id:'sol',why:'자연물 도시락에 솔방울을 담는 아이라서 ‘솔이’예요.',items:[[K.sol.top,'분홍색 윗옷'],[K.sol.pants,'하늘색 바지',true],[K.sol.streak,'포니테일에 민트색 브릿지']],role:'그네를 타고 비눗방울을 잡는 아이'},
+  {id:'dahong',why:'빨간 삔과 단풍 색 ‘다홍’에서 따왔어요.',items:[[K.dahong.top,'회색 윗옷'],['#cc4a46','빨강·남색 체크 바지',true],[K.dahong.pin,'빨간 삔']],role:'그네를 밀어 주는 아이'}
+];
+$('kids').innerHTML=kidsInfo.map(k=>`<div class="card"><div class="por">${portrait(kid(k.id,0,0,{mood:'happy',aL:20,aR:20}),'-78 -172 156 182',k.id)}</div><h3>${K[k.id].name}</h3><p class="why">${k.why}<br>${k.role}</p><ul>${k.items.map(([c,t,ch])=>`<li>${sw(c)}${t}${ch?'<span class="chg">변경</span>':''}</li>`).join('')}</ul></div>`).join('');
+const adultsInfo=[['dad','나리 아빠','초록 점퍼, 안경. 처음부터 나리와 함께 와요.'],['narimom','나리 엄마','베이지 코트, 단발. 중간에 합류해요.'],['solmom','솔이 엄마','겨자색 카디건, 큰 초록 가방. 비눗방울을 모두 챙겨 왔어요.'],['hongmom','다홍 엄마','남색 코트, 올림머리.']];
+$('grown').innerHTML=adultsInfo.map(([id,n,d])=>`<div class="card"><div class="por">${portrait(adult(id,0,0,{}),'-64 -276 128 284',id)}</div><h3>${n}</h3><p class="why">${d}</p></div>`).join('');
+
+function tab(name){['flip','grid','cast'].forEach(n=>{$('v-'+n).hidden=n!==name;$('t-'+n).setAttribute('aria-selected',n===name?'true':'false')})}
+['flip','grid','cast'].forEach(n=>$('t-'+n).addEventListener('click',()=>tab(n)));
+show(cur);
+</script>
