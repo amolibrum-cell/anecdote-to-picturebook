@@ -1,0 +1,127 @@
+<title>몽실몽실 비눗방울 화풍 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap">
+<style>
+/* layout: 그림책 더미 보기 — 한 줄이 펼친 책 한 번(왼쪽 | 오른쪽), 그 아래 글과 구성 설명 */
+:root{
+  --bg:#eef0ea; --surface:#fbfaf6; --fg:#2c2a27; --muted:#66625a; --line:#d9d8cf;
+  --accent:#7a52b8; --chip:#e5e2f0; --ink:#3b302b; --ink-light:#ffffff;
+  --font-book:'Gaegu','Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --font-ui:'Gowun Dodum',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#1a1c1a;--surface:#242622;--fg:#ecebe5;--muted:#a9a69c;--line:#3a3c36;--accent:#b79ae6;--chip:#33304a;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#1a1c1a;--surface:#242622;--fg:#ecebe5;--muted:#a9a69c;--line:#3a3c36;--accent:#b79ae6;--chip:#33304a;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:16px;line-height:1.65}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:26px 64px;display:grid;gap:34px}
+header h1{font-family:var(--font-book);font-weight:700;font-size:clamp(34px,6vw,52px);line-height:1.05;margin:0;text-wrap:balance}
+header p{margin:8px 0 0;color:var(--muted)}
+h2{font-family:var(--font-book);font-size:28px;line-height:1.2;margin:0 0 10px;text-wrap:balance}
+.changes{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.changes ul{margin:0;padding-left:1.2em;display:grid;gap:6px;max-width:68ch}
+.changes b{font-weight:400;background:var(--chip);padding:0 6px;border-radius:5px}
+
+.spread{display:grid;gap:12px;min-width:0;container:spread / inline-size}
+.lab{font-size:14px;color:var(--muted)}
+.lab b{color:var(--fg);font-weight:400;font-size:17px;margin-right:8px}
+.book{position:relative;display:grid;grid-template-columns:1fr 1fr;border-radius:3px;overflow:hidden;max-width:100%;
+  box-shadow:0 1px 2px rgba(40,30,20,.12),0 14px 34px rgba(40,30,20,.18)}
+.book.full{grid-template-columns:1fr}
+.book::after{content:"";position:absolute;top:0;bottom:0;left:calc(50% - 8px);width:16px;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,0,0,.16) 50%,rgba(0,0,0,0))}
+.sheet{position:relative;container-type:inline-size;min-width:0}
+.sheet svg{display:block;width:100%;height:auto}
+.txt{--u:1cqw;position:absolute;font-family:var(--font-book);font-weight:700;color:var(--ink);font-size:calc(var(--u)*3.8);line-height:1.35;text-wrap:pretty}
+.full .txt{--u:.5cqw}
+.txt.light{color:var(--ink-light);text-shadow:0 1px 4px rgba(25,70,120,.55)}
+.txt p{margin:0 0 .3em}
+.title{left:0;right:0;top:7%;text-align:center;font-size:calc(var(--u)*9.4);line-height:1.05;color:#fff;
+  text-shadow:0 2px 0 #7a52b8,0 4px 10px rgba(40,70,120,.35)}
+.title span{display:inline-block}
+.title span:nth-child(2){color:#fff6c9}
+.cap{display:none;font-family:var(--font-book);font-size:22px;line-height:1.45;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.cap p{margin:0 0 4px}
+@container spread (max-width: 760px){ .txt:not(.title){display:none} .cap{display:block} }
+
+.why{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+.why h3{margin:0 0 6px;font-size:14px;letter-spacing:.04em;color:var(--accent);font-weight:400}
+.why ul{margin:0;padding-left:1.2em;display:grid;gap:5px;max-width:70ch}
+.ask{border-top:1px solid var(--line);padding-top:24px}
+.ask ol{margin:0;padding-left:1.3em;display:grid;gap:6px;max-width:68ch}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>몽실몽실 비눗방울</h1>
+  <p>새 화풍 시안 · 색종이를 오려 붙인 콜라주 느낌 · 표지와 12–13쪽만 먼저 그렸어요</p>
+</header>
+
+<section class="changes" aria-labelledby="h-changes">
+  <h2 id="h-changes">지난 시안에서 바꾼 것</h2>
+  <ul>
+    <li><b>테두리 선을 없앴어요.</b> 굵은 검은 선이 사람을 도형처럼 보이게 했던 가장 큰 원인이었어요. 이제는 색 면(종이 조각)만으로 모양을 만들어요.</li>
+    <li><b>팔다리가 관절에서 휘어요.</b> 막대처럼 곧은 팔 대신 팔꿈치·무릎에서 구부러지는 곡선이라, 까치발·깡충·손 뻗기 같은 동작이 자연스러워졌어요.</li>
+    <li><b>몸과 고개가 기울어요.</b> 아이마다 몸을 조금씩 기울이고 고개를 돌려서, 셋이 똑같이 차렷한 느낌이 사라졌어요. 솔이 포니테일도 움직임에 따라 흔들려요.</li>
+    <li><b>종이 질감과 그림자를 넣었어요.</b> 가장자리를 가위로 오린 듯 살짝 울퉁불퉁하게 하고, 조각 밑에 옅은 그림자를 깔아 종이를 겹쳐 붙인 느낌을 냈어요. 하늘은 물감이 번진 듯 얼룩지게 했어요.</li>
+  </ul>
+</section>
+
+<section class="spread" aria-labelledby="h-cover">
+  <div class="lab"><b id="h-cover">표지</b>왼쪽: 뒤표지 | 오른쪽: 앞표지</div>
+  <div class="book">
+    <div class="sheet" data-art="back"></div>
+    <div class="sheet" data-art="cover">
+      <div class="txt title"><span>몽실몽실</span> <span>비눗방울</span></div>
+    </div>
+  </div>
+  <div class="why">
+    <h3>왜 이렇게 그렸나요</h3>
+    <ul>
+      <li>제목은 위쪽 하늘에 두고 그 자리는 비워 뒀어요. 그림과 글자가 겹치지 않아야 서점에서 멀리서도 제목이 읽혀요.</li>
+      <li>세 아이를 한 줄에 세우되 자세를 모두 다르게 했어요. 솔이는 까치발로 방울을 톡 터뜨리고, 나리는 후— 불고, 다홍이는 막대를 흔들며 깡충. 표지만 봐도 세 아이의 성격이 보이게요.</li>
+      <li>옷 색(분홍·보라·회색 체크)과 머리 모양(포니테일·단발·어깨 머리)이 모두 달라서, 작게 그려도 누가 누군지 바로 구별돼요.</li>
+      <li>뒤표지에는 솔이의 '가을 도시락' 하나만 놓았어요. 앞표지가 북적이면 뒤표지는 조용하게 두는 게 균형이 좋아요.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="spread" aria-labelledby="h-sky">
+  <div class="lab"><b id="h-sky">12–13쪽 펼침면</b>절정 장면 · 두 쪽을 한 그림으로</div>
+  <div class="book full">
+    <div class="sheet full" data-art="sky">
+      <div class="txt light" style="left:4.5%;top:9%;width:34%">
+        <p>몽실몽실, 비눗방울이 올라가요.</p><p>높이, 더 높이.</p><p>파란 가을 하늘까지 닿을 것 같아요.</p>
+      </div>
+    </div>
+  </div>
+  <div class="cap"><p>몽실몽실, 비눗방울이 올라가요. 높이, 더 높이.</p><p>파란 가을 하늘까지 닿을 것 같아요.</p></div>
+  <div class="why">
+    <h3>왜 이렇게 그렸나요</h3>
+    <ul>
+      <li>아이들을 아주 작게, 하늘을 아주 크게 그렸어요. 가장 중요한 장면은 '넓은 하늘'이 주인공이라서요. 작은 아이와 큰 하늘의 대비가 "높이, 더 높이"를 그림으로 보여 줘요.</li>
+      <li>아이들은 뒷모습이에요. 얼굴을 안 보여 주면 읽는 사람이 아이들 뒤에 서서 같이 하늘을 올려다보는 기분이 들어요.</li>
+      <li>비눗방울은 왼쪽 아래에서 오른쪽 위로 흘러가며 점점 커져요. 책장을 넘기는 방향과 같아서 눈이 자연스럽게 따라가요.</li>
+      <li>가운데 접히는 선(제본선)에는 아이들이나 중요한 것을 두지 않았어요. 실제 책에서는 그 부분이 접혀 들어가 안 보여요.</li>
+      <li>먼 숲은 색을 연하게 칠했어요. 멀리 있는 것을 흐리게 하면 그림에 거리감이 생겨요. 어른들은 오른쪽 벤치에 작게만 넣었어요.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="ask" aria-labelledby="h-ask">
+  <h2 id="h-ask">확인해 주세요</h2>
+  <ol>
+    <li>이 화풍으로 나머지 쪽(1–11쪽, 14–15쪽)을 그려도 될까요?</li>
+    <li>아이들 얼굴·옷·머리 모양, 색감에서 바꾸고 싶은 곳이 있으면 모아서 한 번에 알려 주세요.</li>
+  </ol>
+</section>
+</div>
+
+<script>/*ART*/</script>
+<script>
+document.querySelectorAll('[data-art]').forEach((el, i) => {
+  P = 'p' + i + '_';
+  el.insertAdjacentHTML('afterbegin', S[el.dataset.art]());
+});
+</script>
