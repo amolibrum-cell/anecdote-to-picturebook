@@ -1,0 +1,110 @@
+<title>몽실몽실 비눗방울 그림 프롬프트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* layout: 위에서 아래로 따라 하는 작업 카드 — 사용 순서 → 고칠 때 쓰는 말 → 장면별 프롬프트 카드(복사 버튼) */
+:root{
+  --bg:#f3efe6; --surface:#fffdf8; --fg:#2c2a27; --muted:#6b665c; --line:#ddd6c8;
+  --accent:#3f7fc2; --on-accent:#ffffff; --chip:#e8e1d2; --code:#f6f2e9;
+  --font-book:'Gaegu','Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --font-ui:'Gowun Dodum',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#1b1a17;--surface:#25231f;--fg:#ece8df;--muted:#aaa497;--line:#3b3832;--accent:#8cbcf0;--on-accent:#10202f;--chip:#34312a;--code:#1f1d1a;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg:#1b1a17;--surface:#25231f;--fg:#ece8df;--muted:#aaa497;--line:#3b3832;--accent:#8cbcf0;--on-accent:#10202f;--chip:#34312a;--code:#1f1d1a;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:16px;line-height:1.65}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:26px 64px;display:grid;gap:30px}
+header h1{font-family:var(--font-book);font-weight:700;font-size:clamp(34px,6vw,50px);line-height:1.05;margin:0;text-wrap:balance}
+header p{margin:8px 0 0;color:var(--muted);max-width:62ch}
+h2{font-family:var(--font-book);font-size:28px;line-height:1.2;margin:0 0 10px;text-wrap:balance}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;min-width:0}
+.box ol,.box ul{margin:0;padding-left:1.3em;display:grid;gap:7px;max-width:66ch}
+.fix{display:grid;gap:8px}
+.fix div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px;align-items:start;padding-top:8px;border-top:1px dashed var(--line)}
+.fix div:first-child{border-top:0;padding-top:0}
+.fix code{font-family:var(--font-mono);font-size:13px;background:var(--code);padding:3px 6px;border-radius:5px;overflow-wrap:anywhere}
+@media (max-width:560px){.fix div{grid-template-columns:1fr}}
+.cards{display:grid;gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:10px;min-width:0}
+.card.pre{border-style:dashed}
+.top{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 12px}
+.card h3{font-family:var(--font-book);font-size:24px;margin:0;line-height:1.2}
+.size{font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;padding:1px 9px;border-radius:999px;background:var(--chip)}
+.chip.nari{background:#e4d8f4;color:#3e2a63}.chip.sol{background:#fbdbe6;color:#6b2440}.chip.dahong{background:#f3d3cf;color:#6a221d}
+.why{margin:0;color:var(--muted);max-width:66ch}
+.why b{font-weight:400;color:var(--fg)}
+.prompt{position:relative}
+.prompt pre{margin:0;font-family:var(--font-mono);font-size:12.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--code);border:1px solid var(--line);border-radius:10px;padding:12px 14px;max-height:13em;overflow:auto}
+.copy{font:inherit;font-size:14px;padding:7px 14px;border-radius:9px;border:0;background:var(--accent);color:var(--on-accent);cursor:pointer;justify-self:start}
+.copy:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.copy.done{opacity:.75}
+.next p{margin:0;max-width:66ch}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>몽실몽실 비눗방울</h1>
+  <p>그림 프롬프트 · 이미지 생성 도구에 그대로 붙여 넣어 장면마다 그림을 만들 수 있어요. 프롬프트는 영어로 썼어요. 대부분의 이미지 도구는 영어 설명을 더 정확하게 알아들어요.</p>
+</header>
+
+<section class="box" aria-labelledby="h-how">
+  <h2 id="h-how">이렇게 쓰세요</h2>
+  <ol>
+    <li><b>설정표부터 만들기.</b> 아래 '아이들 설정표'를 먼저 넣어 여러 번 뽑아 보고, 가장 마음에 드는 한 장을 고르세요. 어른 설정표도 똑같이 해요.</li>
+    <li><b>장면마다 설정표를 같이 첨부하기.</b> 장면 프롬프트를 붙여 넣을 때 고른 설정표 그림을 함께 올리고 "Use the attached character sheet for the characters' look."를 덧붙이세요. 이렇게 해야 쪽마다 아이 얼굴과 옷이 덜 바뀌어요.</li>
+    <li><b>한 장면에서 여러 장 뽑기.</b> 같은 프롬프트로 3~4장 뽑아 그중 가장 나은 걸 고르세요. 한 번에 완벽하게 나오는 일은 드물어요.</li>
+    <li><b>글자는 그림에 넣지 않기.</b> 이미지 도구는 한글을 잘 못 써요. 글은 나중에 시안 페이지에서 그림 위에 올릴게요. 그래서 프롬프트마다 글이 들어갈 빈자리를 비워 두라고 적어 뒀어요.</li>
+  </ol>
+</section>
+
+<section class="box" aria-labelledby="h-fix">
+  <h2 id="h-fix">이상하게 나오면 덧붙일 말</h2>
+  <div class="fix">
+    <div><span>손가락·팔이 이상해요</span><code>Natural hands with five fingers, simple and relaxed poses.</code></div>
+    <div><span>아이들 옷 색이 바뀌었어요</span><code>Keep each character's outfit colors exactly as described.</code></div>
+    <div><span>그림에 글자가 생겼어요</span><code>Absolutely no text or writing anywhere in the image.</code></div>
+    <div><span>너무 진하고 매끈해요</span><code>Lighter, softer watercolor, more white paper showing through.</code></div>
+    <div><span>아이들이 너무 커요/작아요</span><code>Make the children smaller in the frame, with more sky.</code></div>
+    <div><span>어른처럼 보여요</span><code>The girls are small 6-year-old children with round faces and short limbs.</code></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-scenes">
+  <h2 id="h-scenes">장면별 프롬프트</h2>
+  <div class="cards" id="cards"></div>
+</section>
+
+<section class="box next" aria-labelledby="h-next">
+  <h2 id="h-next">그림이 나오면</h2>
+  <p>마음에 드는 그림을 이 대화에 올려 주세요. 쪽 번호에 맞춰 시안 페이지(넘겨 보기·한눈에 보기·등장인물)에 넣고, 글을 얹고, 출력용 PDF 2개까지 만들어 드릴게요. 몇 장씩 나눠 보내셔도 괜찮아요.</p>
+</section>
+</div>
+
+<script>/*DATA*/</script>
+<script>
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const box = document.getElementById('cards');
+SCENES.forEach(sc => {
+  const p = buildPrompt(sc);
+  const chips = sc.cast.map(c => `<span class="chip ${c}">${CAST[c].ko}</span>`).join('');
+  box.insertAdjacentHTML('beforeend', `<article class="card${sc.size === 'sheet' ? ' pre' : ''}" aria-labelledby="t-${sc.id}">
+    <div class="top"><h3 id="t-${sc.id}">${sc.label}</h3><span class="size">비율: ${SIZE[sc.size].ko}</span></div>
+    ${chips ? `<div class="chips">${chips}</div>` : ''}
+    <p class="why"><b>구성 의도</b> · ${sc.why}</p>
+    <div class="prompt"><pre id="p-${sc.id}">${esc(p)}</pre></div>
+    <button class="copy" id="c-${sc.id}" type="button">프롬프트 복사</button>
+  </article>`);
+});
+box.addEventListener('click', e => {
+  const b = e.target.closest('.copy'); if (!b) return;
+  const pre = document.getElementById('p-' + b.id.slice(2));
+  const ok = () => { b.textContent = '복사했어요'; b.classList.add('done'); setTimeout(() => { b.textContent = '프롬프트 복사'; b.classList.remove('done') }, 1800) };
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = '선택했어요 · 길게 눌러 복사'; };
+  try { navigator.clipboard.writeText(pre.textContent).then(ok, fallback) } catch (_) { fallback() }
+});
+</script>
